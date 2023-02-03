@@ -1,0 +1,726 @@
+Cine:
+
+1) Obtener ordenados ascendentemente los códigos de los países de donde son los actores
+
+SELECT DISTINCT cod_pais
+FROM BDA_CINE.actor
+ORDER BY cod_pais;
+
+2) Obtener el código y el título de las películas de año anterior a 1970 que no estén basadas en ningún libro
+ordenadas por título
+
+SELECT DISTINCT cod_peli, titulo
+FROM BDA_CINE.pelicula
+WHERE anyo < 1970 AND cod_lib IS NULL;
+
+3) Obtener el código y el nombre de los actores cuyo nombre incluye “John”
+
+SELECT DISTINCT cod_act, nombre
+FROM BDA_CINE.actor
+WHERE nombre LIKE '%Jhon%';
+
+4)Obtener el código y el título de las películas de más de 120 minutos de la década de los 80
+
+SELECT DISTINCT cod_peli, titulo
+FROM BDA_CINE.pelicula
+WHERE duracion > 120 AND anyo between 1980 AND 1989;
+
+5) Obtener el código y el título de las películas que estén basadas en algún libro y cuyo director se apellide
+‘Pakula
+
+SELECT DISTINCT cod_peli, titulo
+FROM BDA_CINE.pelicula
+WHERE director LIKE '%Pakula%' AND NOT cod_lib IS NULL;
+
+6) ¿Cuántas películas hay de más de 120 minutos de la década de los 80?
+
+SELECT DISTINCT COUNT(*)
+FROM BDA_CINE.pelicula
+WHERE duracion > 120 AND anyo between 1980 AND 1989;
+
+7)¿Cuántas películas se han clasificado de los géneros de código 'BB5' o 'GG4' o'JH6'?
+
+SELECT DISTINCT COUNT(*)
+FROM BDA_CINE.clasificacion
+WHERE cod_gen = 'BB5' OR cod_gen = 'GG4' OR cod_gen = 'JH6';
+
+8)¿De qué año es el libro más antiguo?
+
+SELECT DISTINCT MIN(anyo)
+FROM BDA_CINE.libro;
+
+9) ¿Cuál es la duración media de las películas del año 1987?
+
+SELECT DISTINCT AVG(duracion)
+FROM BDA_CINE.pelicula
+WHERE anyo = 1987;
+
+10) ¿Cuántos minutos ocupan todas las películas dirigidas por ‘Steven Spielberg’?
+
+SELECT DISTINCT SUM (duracion)
+FROM BDA_CINE.pelicula
+WHERE director = 'Steven Spielberg';
+
+11) Obtener el código y el título de las películas en las que actúa un actor con el mismo nombre que el director
+de la película (ordenadas por título).
+
+SELECT p.cod_peli, p.titulo
+FROM BDA_CINE.pelicula p, BDA_CINE.actor a
+WHERE a.nombre = p.director
+ORDER BY p.titulo
+
+12) Obtener el código y el título de las películas clasificadas del género de nombre ‘Comedia’ (ordenadas por
+título).
+
+SELECT DISTINCT p.cod_peli, p.titulo
+FROM BDA_CINE.pelicula p, BDA_CINE.clasificacion c, BDA_CINE.genero g
+WHERE p.cod_peli = c.cod_peli AND c.cod_gen = g.cod_gen AND g.nombre = 'Comedia'
+ORDER BY p.titulo
+
+13) Obtener el código y el título de las películas basadas en algún libro anterior a 1950.
+
+SELECT DISTINCT p.cod_peli, p.titulo
+FROM BDA_CINE.pelicula p, BDA_CINE.libro l
+WHERE p.cod_lib = l.cod_lib AND NOT p.cod_lib IS NULL AND l.anyo < 1950
+
+14) Obtener el código y el nombre de los países de los actores que actúan en películas clasificadas del género
+de nombre ‘Comedia’ (ordenados por nombre)
+
+SELECT DISTINCT p.cod_pais, p.nombre
+FROM BDA_CINE.pais p, BDA_CINE.genero g, BDA_CINE.actor a, BDA_CINE.actua ac, BDA_CINE.pelicula pel, BDA_CINE.clasificacion c 
+WHERE g.nombre = 'Comedia' AND c.cod_gen = g.cod_gen AND pel.cod_peli = c.cod_peli AND pel.cod_peli = ac.cod_peli 
+        AND a.cod_act = ac.cod_act AND p.cod_pais = a.cod_pais
+ORDER BY p.nombre
+
+15) 
+	a) 11] Obtener el código y el título de las películas en las que actúa un actor con el mismo nombre que el director
+		de la película (ordenadas por título).
+
+		SELECT DISTINCT p.cod_peli, p.titulo
+		FROM BDA_CINE.pelicula p
+		WHERE p.director IN (SELECT a.nombre FROM BDA_CINE.actor a)
+		ORDER BY p.titulo
+	b) 12] Obtener el código y el título de las películas clasificadas del género de nombre ‘Comedia’ (ordenadas por título).
+		
+		SELECT p.cod_peli, p.titulo
+		FROM BDA_CINE.pelicula p
+		WHERE p.cod_peli IN (SELECT c.cod_peli 
+                     		     FROM BDA_CINE.clasificacion c
+                     		     WHERE c.cod_gen = (SELECT g.cod_gen 
+                                        		FROM BDA_CINE.genero g 
+                                        		WHERE g.nombre = 'Comedia'))
+		ORDER BY p.titulo
+
+	c) 13] Obtener el código y el título de las películas basadas en algún libro anterior a 1950.
+
+		SELECT cod_peli, titulo
+		FROM BDA_CINE.pelicula
+		WHERE cod_lib IN (SELECT cod_lib 
+                     			FROM BDA_CINE.libro 
+                     			WHERE anyo < 1950)
+		ORDER BY titulo
+	d) 14] Obtener el código y el nombre de los países de los actores que actúan en películas clasificadas del género
+	 	de nombre ‘Comedia’ (ordenados por nombre)
+
+		SELECT cod_pais, nombre
+		FROM BDA_CINE.pais
+		WHERE cod_pais IN (SELECT cod_pais 
+                     		FROM BDA_CINE.actor 
+                     		WHERE cod_act IN (SELECT cod_act 
+                                        	FROM BDA_CINE.actua 
+                                        	WHERE cod_peli IN (SELECT cod_peli 
+                                                            	FROM BDA_CINE.pelicula 
+                                                           	WHERE cod_peli IN (SELECT cod_peli 
+                                                                                FROM BDA_CINE.clasificacion 
+                                                                                WHERE cod_gen IN (SELECT cod_gen
+                                                                                                    FROM BDA_CINE.genero
+                                                                                                    WHERE nombre = 'Comedia')))))
+		ORDER BY nombre
+
+16) Obtener el codigo y el nombre de los actores nacidos antes de 1950 que actuan con un papel 'Principal' en alguna pelicula (ord. nombre)
+
+	SELECT cod_act, nombre
+	FROM BDA_CINE.actor 
+	WHERE cod_act IN (SELECT cod_act FROM BDA_CINE.actua WHERE papel = 'Principal') AND '1/1/1950' > fecha_nac
+	ORDER BY nombre
+
+17) Obtener el codigo, el titulo y el autor de los libros en los que se ha basado alguna pelicula de la decada de los 90 (ord. titulo)
+	
+	SELECT cod_lib, titulo, autor
+	FROM BDA_CINE.libro
+	WHERE cod_lib IN (SELECT cod_lib FROM BDA_CINE.pelicula WHERE anyo <= 1999 AND anyo >= 1990)
+	ORDER BY titulo
+
+18) Obtener el codigo, el titulo y el autor de los libros en los que no se haya basado ninguna pelicula
+
+	SELECT cod_lib, titulo, autor
+	FROM BDA_CINE.libro
+	WHERE cod_lib NOT IN (SELECT cod_lib FROM BDA_CINE.pelicula WHERE cod_lib IS NOT NULL)
+	ORDER BY titulo
+	--------------------------------------------------
+	SELECT cod_lib, titulo, autor
+	FROM BDA_CINE.libro l
+	WHERE NOT EXISTS (SELECT cod_lib FROM BDA_CINE.pelicula p WHERE l.cod_lib = p.cod_lib)
+	ORDER BY titulo
+	
+19) Obtener el nombre del genero o generos a los que pertenecen peliculas en las que no actua ningun actor (ord. nombre)
+	(NO ME DA LO MISMO :/)	
+
+	SELECT nombre
+	FROM BDA_CINE.genero
+	WHERE cod_gen NOT IN (SELECT cod_gen 
+                	FROM BDA_CINE.clasificacion 
+                	WHERE cod_peli IN (SELECT cod_peli 
+                                	FROM BDA_CINE.pelicula 
+                                	WHERE cod_peli IN (SELECT cod_peli 
+                                                	FROM BDA_CINE.actua WHERE cod_act IS NOT NULL)))
+	ORDER BY nombre
+
+20) Obtener el titulo de los libros en los que se haya basado alguna pelicula en la que no haya actuado actores
+	del pais de nombre 'USA' (ord titulos)
+
+	SELECT titulo
+	FROM BDA_CINE.libro
+	WHERE cod_lib IN (SELECT cod_lib 
+                	FROM BDA_CINE.pelicula 
+                	WHERE cod_peli NOT IN (SELECT cod_peli 
+                        	        FROM BDA_CINE.actua 
+                                	WHERE cod_act IN (SELECT cod_act
+                                        	        FROM BDA_CINE.actor WHERE cod_pais IN (SELECT cod_pais
+                                                                                        FROM BDA_CINE.pais
+                                                                                        WHERE nombre = 'USA'))))
+	ORDER BY titulo
+
+21) ¿Cuantas peliculas hay clasificadas del genero 'Comedia' y en las que solo aparece un actor con el rol 'Secundario'?
+
+	SELECT COUNT(*)
+	FROM BDA_CINE.pelicula p
+	WHERE 1 = (SELECT COUNT(*) 
+        	FROM BDA_CINE.actua a 
+        	WHERE p.cod_peli = a.cod_peli) AND p.cod_peli IN (SELECT cod_peli 
+                                                        	FROM BDA_CINE.clasificacion 
+                                                        	WHERE cod_gen IN (SELECT cod_gen 
+                                                                        	FROM BDA_CINE.genero 
+                                                                        	WHERE nombre = 'Comedia'))
+
+22) Obtener el año de la primera pelicula en la que el actor de nombre 'Jude Law' tuvo un papel como 'Principal'
+
+	SELECT anyo
+	FROM BDA_CINE.pelicula
+	WHERE cod_peli IN (SELECT MIN(cod_peli)
+                	FROM BDA_CINE.actua
+                	WHERE papel = 'Principal' AND cod_act IN (SELECT cod_act 
+                                                        	FROM BDA_CINE.actor  
+                                                        	WHERE nombre = 'Jude Law'))
+
+23) Obtener el codigo y el nombre de actor o actores más viejos
+
+	SELECT nombre, cod_act
+	FROM BDA_CINE.actor
+	WHERE fecha_nac IN (SELECT MIN(fecha_nac) FROM BDA_CINE.actor)
+
+24) Obtener el codigo, nombre y fecha de nacimiento del mas viejo nacido en el año 1940
+
+	SELECT nombre, cod_act, fecha_nac
+	FROM BDA_CINE.actor
+	WHERE fecha_nac IN (SELECT MIN(fecha_nac) FROM BDA_CINE.actor WHERE fecha_nac >= '1/1/1940')
+
+25) Obtener nombre del genero o generos en los que se ha clasificado la pelicula mas larga
+
+	SELECT nombre
+	FROM BDA_CINE.genero
+	WHERE cod_gen IN (SELECT cod_gen 
+                	FROM BDA_CINE.clasificacion 
+                	WHERE cod_peli IN (SELECT cod_peli
+                                    	FROM BDA_CINE.pelicula
+                                    	WHERE duracion IN (SELECT MAX(duracion) FROM BDA_CINE.pelicula)))
+
+26) Obtener el codigo y titulo de los libros en los que se han basado peliculas en las que actuan actores del
+	pais de nombre España (ord titulo)
+
+	SELECT cod_lib, titulo
+	FROM BDA_CINE.libro
+	WHERE cod_lib IN (SELECT cod_lib 
+                FROM BDA_CINE.pelicula 
+                WHERE cod_peli IN (SELECT cod_peli 
+                                FROM BDA_CINE.actua 
+                                WHERE cod_act IN (SELECT cod_act 
+                                            FROM BDA_CINE.actor 
+                                            WHERE cod_pais IN (SELECT cod_pais FROM BDA_CINE.pais WHERE nombre = 'España'))))
+	ORDER BY titulo
+
+27) Obtener el titulo de las peliculas anteriores a 1950 clasificadas en mas de un genero (ord titulo)
+	
+	SELECT p.titulo
+	FROM BDA_CINE.pelicula p
+	WHERE p.anyo < 1950 AND cod_peli IN (SELECT cod_peli 
+                                	FROM BDA_CINE.clasificacion
+                                	WHERE (SELECT COUNT(*) FROM BDA_CINE.clasificacion c WHERE c.cod_peli = p.cod_peli) > 1)
+	ORDER BY p.titulo
+
+28) Obtener la cantidad de peliculas en las que han participado menos de 4 actores
+
+	(NO ME DA)
+	SELECT COUNT(*)
+	FROM BDA_CINE.pelicula 
+	WHERE cod_peli IN (SELECT cod_peli 
+                	FROM BDA_CINE.actua a
+                	WHERE (SELECT COUNT(c.cod_act) FROM BDA_CINE.actor c WHERE c.cod_act = a.cod_act) < 4)
+
+29) Obtener los directores que han dirigido mas de 250 minutos entre todas sus peliculas
+
+	SELECT DISTINCT director
+	FROM BDA_CINE.pelicula p
+	WHERE (SELECT SUM (duracion) FROM BDA_CINE.pelicula p2 WHERE p.director = p2.director) > 250
+	
+32) Obtener el codigo y el nombre de los paises con actores y tales que todos los actores de ese pais ha nacido en el siglo XX (ord nombre)
+
+	(CASI 1 DE MAS)
+	SELECT cod_pais, nombre
+	FROM BDA_CINE.pais p
+	WHERE (SELECT COUNT(*) FROM BDA_CINE.actor a WHERE p.cod_pais = a.cod_pais AND fecha_nac >= '1/1/1900' AND fecha_nac < '1/1/2000') > 0
+	ORDER BY nombre
+
+33) Obtener el codigo y el nombre de los actores tales que todos los papeles que han tenido son de 'Secundario'. Solo interesan aquellos que
+	hayan actuado en alguna pelicula
+
+	SELECT DISTINCT cod_act, nombre
+	FROM BDA_CINE.actor 
+	WHERE cod_act IN (SELECT cod_act FROM BDA_CINE.actua WHERE cod_peli IS NOT NULL AND papel = 'Secundario')
+	ORDER BY nombre
+
+34) Obtener el nombre de los actores que han aparecido en todas las peliculas del director
+	'Guy Ritchie'
+
+	SELECT r.nombre
+	FROM  BDA_CINE.actor r
+	WHERE (SELECT COUNT(*) 
+    		FROM BDA_CINE.pelicula 
+    		WHERE director = 'Guy Ritchie')
+    		= 
+    		(SELECT COUNT (*)
+    		FROM BDA_CINE.actua a
+    		WHERE cod_peli IN (SELECT cod_peli 
+        		FROM BDA_CINE.pelicula
+        		WHERE director = 'Guy Ritchie') 
+        	AND r.cod_act = a.cod_act) 
+    	AND EXISTS (SELECT director 
+        	FROM BDA_CINE.pelicula 
+        	WHERE director = 'Guy Ritchie')
+
+35) Resolver la consulta anterior pero para el director 'Jhon Steel'
+
+	SELECT r.nombre
+	FROM  BDA_CINE.actor r
+	WHERE (SELECT COUNT(*) 
+    		FROM BDA_CINE.pelicula 
+    		WHERE director = 'Jhon Steel')
+    		= 
+    		(SELECT COUNT (*)
+    		FROM BDA_CINE.actua a
+    		WHERE cod_peli IN (SELECT cod_peli 
+        		FROM BDA_CINE.pelicula
+        		WHERE director = 'Jhon Steel') 
+        	AND r.cod_act = a.cod_act) 
+    	AND EXISTS (SELECT director 
+        	FROM BDA_CINE.pelicula 
+        	WHERE director = 'Jhon Steel')
+
+36) Codigo y nombre de las peliculas que duran menos de 100 min en las que todo los actores
+	son de un mismo pais
+	
+	(CASI PERO NO)
+	SELECT p.cod_peli, p.titulo
+	FROM BDA_CINE.pelicula p
+	WHERE p.duracion < 100 AND
+     		(SELECT COUNT(*) 
+     		FROM BDA_CINE.actua a
+     		WHERE p.cod_peli = a.cod_peli 
+     		AND a.cod_act IN (SELECT r.cod_act 
+        		FROM BDA_CINE.actor r, BDA_CINE.pais s
+        		WHERE r.cod_pais = s.cod_pais)) 
+    	=
+    		(SELECT COUNT (*)
+    		FROM BDA_CINE.actua a
+    		WHERE p.cod_peli = a.cod_peli)
+
+37) Codigo, titulo y año de las peliculas en las que haya actuado si se cumple que todos
+	los actores que han actuado en ella han nacido antes de 1943
+
+	SELECT p.cod_peli, p.titulo, p.anyo
+	FROM BDA_CINE.pelicula p
+	WHERE
+     		(SELECT COUNT(*) 
+     		FROM BDA_CINE.actua a
+     		WHERE p.cod_peli = a.cod_peli 
+     	AND a.cod_act IN (SELECT r.cod_act 
+        	FROM BDA_CINE.actor r, BDA_CINE.pais s
+        	WHERE r.cod_pais = s.cod_pais AND r.fecha_nac < '1/1/1943')) 
+    	=
+    		(SELECT COUNT (*)
+    		FROM BDA_CINE.actua a
+    		WHERE p.cod_peli = a.cod_peli)
+	ORDER BY p.titulo
+
+39) Codigo y titulo del libro o libros en que se han basado mas de una pelicula, indica
+	cuantas peliculas se han hecho sobre el
+
+	SELECT l.cod_lib, l.titulo, COUNT(*)
+	FROM LIBRO_PELI l, PELICULA p
+	WHERE l.cod_lib = p.cod_lib
+	GROUP BY p.cod_lib
+	HAVING COUNT(*) > 1
+
+40) Obtener para cada género en el que se han clasificado más de 5 películas, el código y el nombre del
+género indicando la cantidad de películas del mismo y duración media de sus películas. (Ordenados por
+nombre). (La función ROUND redondea al entero más cercano).
+
+	SELECT g.cod_gen, g.nombre, COUNT(*), AVG(p.DURACION)
+	FROM GENERO g, CLASIFICACION c, PELICULA p
+	WHERE g.cod_gen = c.cod_gen AND c.COD_PELI = p.COD_PELI
+	GROUP BY c.COD_GEN
+	HAVING COUNT(*)>5
+	ORDER BY g.nombre
+
+
+41) Obtener el código y el título de las películas de año posterior al 2000 junto con el número de géneros en
+que están clasificadas, si es que están en alguno. (Ordenadas por título)
+
+	SELECT p.cod_peli, p.titulo, COUNT(*)
+	FROM PELICULA p, CLASIFICACION c
+	WHERE p.COD_PELI = c.COD_PELI AND p.ANYO > 2000
+	GROUP BY p.TITULO
+	HAVING COUNT(*)>0
+	ORDER BY p.TITULO
+
+42) Obtener los directores que tienen la cadena ‘George’ en su nombre y que han dirigido exactamente dos
+películas
+
+	SELECT director
+	FROM PELICULA
+	WHERE director LIKE '%George%'
+	GROUP BY director
+	HAVING COUNT(*) = 2
+
+43) Obtener para cada película clasificada exactamente en un género y en la que haya actuado algún actor,
+el código, el título y la cantidad de actores que actúan en ella.
+
+	(CASI)
+	SELECT p.cod_peli, p.titulo, COUNT(*)
+	FROM PELICULA p, CLASIFICACION c 
+	WHERE p.COD_PELI = c.COD_PELI AND (SELECT COUNT(*) FROM ACTUA a WHERE a.COD_ACT IS NOT NULL AND a.COD_PELI = p.COD_PELI)
+	GROUP BY p.TITULO
+	HAVING COUNT(c.COD_GEN) = 1
+
+
+44) Obtener el código y el nombre de todos los países con actores indicando cuántos actores de cada país
+han actuado en al menos una película de la década de los 60
+
+	(CASI)
+	SELECT p.COD_PAIS, p.NOMBRE, COUNt(*)
+	FROM PAIS p, ACTOR ac, ACTUA a, PELICULA pl
+	WHERE p.COD_PAIS = ac.COD_PAIS AND ac.COD_ACT = a.COD_ACT AND a.COD_PELI = pl.COD_PELI 
+	AND pl.ANYO > 1960 AND pl.ANYO < 1970 AND a.COD_PELI IS NOT NULL
+	GROUP BY p.NOMBRE
+	
+45) Obtener el código, el nombre del género en el que hay clasificadas más películas (puede haber más de
+uno)
+
+	(NO ES LO OPTIMO PERO FUNCIONA)
+	SELECT g.cod_gen, g.nombre
+	FROM GENERO g, CLASIFICACION c
+	WHERE g.COD_GEN = c.COD_GEN
+	GROUP BY g.COD_GEN
+	ORDER BY COUNT(*) DESC
+	LIMIT 1
+
+
+46) Obtener el código, el título y el autor del libro en el que se han basado más películas (puede haber más
+de uno)
+
+	SELECT l.COD_LIB, l.TITULO, l.AUTOR
+	FROM LIBRO_PELI l, PELICULA p
+	WHERE l.COD_LIB = p.COD_LIB AND p.COD_LIB IS NOT NULL
+	GROUP BY l.TITULO
+	HAVING COUNT(p.COD_LIB) > 1
+
+47) Obtener el código y el nombre del país que más actores tiene que hayan participado exactamente en 2
+películas.
+
+	(ESTA MAL)
+	SELECT ps.COD_PAIS, ps.NOMBRE
+	FROM PAIS ps, ACTOR ar, ACTUA a, PELICULA p
+	WHERE ps.COD_PAIS = ar.COD_PAIS AND ar.COD_ACT = a.COD_ACT AND a.COD_PELI = p.COD_PELI
+	GROUP BY ps.COD_PAIS
+	ORDER BY COUNT(ar.COD_ACT) DESC
+	LIMIT 1
+
+48) Obtener el año o años en el que nacieron más de 3 actores indicando cuántos nacieron exactamente
+	
+	SELECT YEAR(ar.FECHA_NAC), COUNT(*)
+	FROM ACTOR ar
+	GROUP BY YEAR(ar.FECHA_NAC)
+	HAVING COUNT(*) > 3
+
+50) Obtener para todos los países que hay en la base de datos, el código, el nombre y la cantidad de actores
+que hay de ese país
+
+	SELECT p.COD_PAIS, p.NOMBRE, COUNT(a.COD_ACT)
+	FROM PAIS p LEFT JOIN ACTOR a ON p.COD_PAIS = a.COD_PAIS
+	GROUP BY p.COD_PAIS
+
+51) Obtener el código y el título de todos los libros de la base de datos de año posterior a 1980 junto con la
+cantidad de películas a que han dado lugar
+
+	SELECT l.COD_LIB, l.TITULO, COUNT(p.COD_PELI)
+	FROM LIBRO_PELI l LEFT JOIN PELICULA p ON l.COD_LIB = p.COD_LIB
+	WHERE l.ANYO >1980
+	GROUP BY l.COD_LIB
+
+52) Obtener para todos los países que hay en la base de datos, el código, el nombre y la cantidad de actores
+que hay de ese país que hayan tenido un papel como “Secundario” en alguna película.
+
+	(No me slaen los 0, habria hacerlo de alguna forma para que se una ambos)
+	SELECT p.COD_PAIS, p.NOMBRE, COUNT(a.COD_ACT)
+	FROM PAIS p 
+	LEFT JOIN ACTOR a ON a.COD_PAIS = p.COD_PAIS
+	WHERE a.COD_ACT IN (SELECT a1.COD_ACT FROM ACTOR a1, ACTUA ac WHERE a1.COD_ACT = ac.COD_ACT AND ac.PAPEL = 'Secundario')
+	GROUP BY p.COD_PAIS
+
+53) Obtener para cada película que hay en la base de datos que dure más de 140 minutos, el código, el título,
+la cantidad de géneros en los que está clasificado y la cantidad de actores que han actuado en ella.
+
+	SELECT p.COD_PELI, p.TITULO, COUNT(DISTINCT c.COD_GEN) ,COUNT(DISTINCT a.COD_ACT)
+	FROM PELICULA p
+	LEFT JOIN ACTUA a ON p.COD_PELI = a.COD_PELI
+    	LEFT JOIN CLASIFICACION c ON c.COD_PELI = p.COD_PELI
+	WHERE p.DURACION > 140 
+	GROUP BY p.COD_PELI
+	ORDER BY p.TITULO
+
+54) Obtener los años, ordenados ascendentemente, que aparecen en la base de datos como año en el que
+se editó un libro o se filmó una película. Sólo interesan años en los que no aparezca el dígito 9
+
+	SELECT l.ANYO
+	FROM LIBRO_PELI l 
+	WHERE l.ANYO IS NOT NULL AND NOT l.anyo LIKE  '%9%'
+	UNION
+	SELECT p.ANYO
+	FROM PELICULA p
+	WHERE p.ANYO IS NOT NULL AND NOT p.anyo LIKE  '%9%'
+
+55) Obtener el nombre del género (o de los géneros) a los que pertenece la película de duración máxima
+
+	SELECT DISTINCT g.COD_GEN, g.NOMBRE
+	FROM PELICULA p, CLASIFICACION c, GENERO g
+	WHERE p.COD_PELI = c.COD_PELI AND c.COD_GEN = g.COD_GEN AND p.DURACION = (SELECT MAX(p1.duracion) FROM PELICULA p1)
+
+-------------------------------------------------------------------------------------------------------------------------
+Musica:
+
+1) ¿Cuántos discos hay?
+
+SELECT COUNT(*)
+FROM DISCO
+
+2) Selecciona el nombre de los grupos que no sean de España
+
+SELECT nombre
+FROM GRUPO
+WHERE NOT pais = 'España'
+
+3) Obtener el título de las canciones con más de 5 minutos de duración
+
+SELECT titulo
+FROM CANCION
+WHERE duracion > 5 
+
+4) Obtener la lista de las distintas funciones que se pueden realizar en un grupo
+
+SELECT DISTINCT funcion
+FROM PERTENECE
+
+5) Obtener la lista de clubs de fans junto con su tamaño (número de personas). La lista debe estar ordenada
+de menor a mayor según el tamaño del club
+
+SELECT nombre, num
+FROM CLUB
+ORDER BY num
+
+6) Selecciona el nombre y la sede de los clubes de fans con más de 500 socios.
+
+SELECT nombre, sede
+FROM CLUB
+WHERE num > 500
+ORDER BY num
+
+7) Obtener el nombre y la sede de cada club de fans de grupos de España así como el nombre del grupo al
+que admiran
+
+SELECT c.nombre, c.sede
+FROM CLUB c, GRUPO g
+WHERE c.COD_GRU = g.COD AND g.PAIS = 'España'
+
+8) Obtener el nombre de los artistas que pertenezcan a un grupo de España
+
+SELECT a.NOMBRE
+FROM GRUPO g, PERTENECE p, ARTISTA a 
+WHERE p.COD = g.COD AND g.PAIS = 'España' AND p.dni = a.DNI
+
+9) Obtener el nombre de los discos que contienen alguna canción que dure más de 5 minutos
+
+SELECT DISTINCT d.NOMBRE
+FROM DISCO d, ESTA e, CANCION c
+WHERE d.COD = e.COD AND e.CAN = c.COD AND c.DURACION > 5
+
+10) Obtener los nombres de las canciones que dan nombre al disco en el que aparecen
+
+SELECT DISTINCT d.NOMBRE
+FROM DISCO d, ESTA e, CANCION c
+WHERE d.COD = e.COD AND e.CAN = c.COD AND c.TITULO = d.NOMBRE
+
+11) Obtener los nombres de compañías y direcciones postales de aquellas compañías que han grabado algún
+disco que empiece por ‘A'
+
+SELECT c.NOMBRE, c.DIR
+FROM COMPANYIA c, DISCO d
+WHERE c.COD = d.COD_COMP AND d.NOMBRE LIKE 'A%'
+
+12) DNI de los artistas que pertenecen a más de un grupo
+
+SELECT a.DNI
+FROM ARTISTA a, PERTENECE p, GRUPO g
+WHERE a.DNI = p.DNI and p.COD = g.COD
+GROUP BY a.DNI
+HAVING COUNT(*)>1
+
+13) Obtener el nombre de los discos del grupo mas viejo
+
+SELECT d.NOMBRE
+FROM DISCO d, GRUPO g
+WHERE d.COD_GRU = g.COD AND g.FECHA = (SELECt MIN(g1.FECHA) FROm GRUPO g1)
+
+14) Obtener el nombre de los discos grabados por grupos con club de fans con más de 5000 personas
+
+SELECT g.NOMBRE
+FROM GRUPO g, CLUB c
+WHERE c.COD_GRU = g.COD AND c.NUM >5000
+
+15) Obtener el nombre de los clubes con mayor número de fans indicando ese número
+
+SELECT g.NOMBRE, c.NUM
+FROM GRUPO g, CLUB c
+WHERE c.COD_GRU = g.COD AND c.NUM = (SELECT MAX(c1.NUM) FROM CLUB c1)
+
+16) Obtener el título de las canciones de mayor duración indicando la duración
+
+SELECT c.TITULO, c.DURACION
+FROM CANCION c
+WHERE c.DURACION = (SELECT MAX(c1.DURACION) FROM CANCION c1)
+
+17) Obtener el nombre de las compañías discográficas que no han trabajado con grupos españoles
+
+SELECT DISTINCT c.NOMBRE
+FROM COMPANYIA c, DISCO d, GRUPO g
+WHERE c.COD = d.COD_COMP AND d.COD_GRU = g.COD AND NOT g.PAIS = 'España'
+
+
+18) Obtener el nombre de las compañías discográficas que sólo han trabajado con grupos españoles.
+
+SELECT DISTINCT c.NOMBRE
+FROM COMPANYIA c, DISCO d, GRUPO g
+WHERE c.COD = d.COD_COMP AND d.COD_GRU = g.COD AND g.PAIS = 'España'
+
+19) Obtener el nombre y la dirección de aquellas compañías discográficas que han grabado todos los discos
+de algún grupo
+
+SELECT DISTINCT c.NOMBRE, c.DIR
+FROM COMPANYIA c, DISCO d
+WHERE (SELECT COUNT(*) FROM GRUPO g WHERE g.COD = d.COD_GRU AND g.COD) =
+    	(SELECT COUNT(*) FROM GRUPO g WHERE g.COD = d.COD_GRU AND d.COD_GRU = c.COD)
+
+20) Obtener el nombre de los grupos que sean de España y la suma de sus fans
+
+SELECT g.NOMBRE, SUM(c.NUM)
+FROm GRUPO g, CLUB c
+WHERE g.PAIS = 'España' AND g.COD = c.COD_GRU
+GROUP BY g.NOMBRE
+
+21) Obtener para cada grupo con más de dos componentes el nombre y el número de componentes del
+grupo
+
+SELECT g.NOMBRE, COUNt(p.DNI)
+FROm GRUPO g, PERTENECE p
+WHERE g.COD = p.COD 
+GROUP BY g.NOMBRE
+HAVING COUNT(p.DNI)>2
+
+22) Obtener el número de discos de cada grupo.
+
+SELECT g.NOMBRE, COUNt(*)
+FROm GRUPO g, DISCO d
+WHERE g.COD = d.COD_GRU
+GROUP BY g.NOMBRE
+
+23) Obtener el número de canciones que ha grabado cada compañía discográfica y su dirección
+
+SELECT c.NOMBRE, COUNT(DISTINCT c1.TITULO), c.DIR
+FROM COMPANYIA c 
+	LEFT JOIN  DISCO d ON c.COD = d.COD_COMP 
+    	LEFT JOIN ESTA e ON d.COD = e.COD 
+    	LEFT JOIN CANCION c1 ON e.CAN = c1.COD
+GROUP BY c.NOMBRE
+
+24) Obtener los nombre de los artistas de grupos con clubes de fans de más de 500 personas y que el grupo
+sea de Inglaterra
+
+SELECT a.NOMBRE
+FROM GRUPO g, CLUB c, PERTENECE p, ARTISTA a
+WHERE g.COD = c.COD_GRU AND p.COD = g.COD AND a.DNI = p.DNI AND g.PAIS = 'Inglaterra' AND c.NUM > 500 
+GROUP BY a.NOMBRE
+
+25) Obtener el título de las canciones de todos los discos del grupo U2
+
+SELECT c.TITULO
+FROM DISCO d, GRUPO g, ESTA e, CANCION c
+WHERE d.COD_GRU = g.COD AND g.NOMBRE = 'U2' AND e.COD = d.COD AND e.CAN = c.COD
+ORDER BY c.TITULO
+
+27)Obtener el nombre de los artistas que pertenecen a más de un grupo.
+
+SELECT a.NOMBRE
+FROM ARTISTA a, PERTENECE p, GRUPO g
+WHERE a.DNI = p.DNI AND p.COD =g.COD
+GROUP BY a.NOMBRE
+HAVING COUNT(*) > 1
+
+29) Obtener el décimo (debe haber sólo 9 por encima de él) club con mayor número de fans indicando ese
+número 
+
+(SELECT c.NOMBRE, c.NUM
+FROM CLUB c
+ORDER BY c.NUM DESC
+LIMIT 10)
+ORDER BY num
+LIMIT 1
+
+30) Obtener el nombre de los artistas que tengan la función de bajo en un único grupo y que además éste
+tenga más de dos miembros.
+
+(CASI PERO NO)
+SELECT a.NOMBRE
+FROM ARTISTA a
+WHERE a.DNI IN (SELECT p.DNI FROM PERTENECE p WHERE p.FUNCION = 'bajo') 
+AND (SELECT COUNT(p.DNI) FROM GRUPO g, PERTENECE p WHERE g.COD = p.COD AND EXISTS(SELECT * FROM ARTISTA a1 WHERE a.DNI = a1.DNI)) > 2
+
+31)¿Cuál es la compañía discográfica que más canciones ha grabado?
+
+SELECT c.NOMBRE
+FROM COMPANYIA c, DISCO d, ESTA e
+WHERE c.COD = d.COD_COMP AND d.COD = e.COD
+GROUP By c.NOMBRE
+ORDER BY COUNT(*) DESC
+LIMIT 1
+
+
+
